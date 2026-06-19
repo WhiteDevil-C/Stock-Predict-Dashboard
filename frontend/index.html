@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stock Market Trend Forecasting · ML Dashboard</title>
+  <link rel="shortcut icon" href="#" />
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <!-- FontAwesome Icons for graphics quality -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+  <!-- Glowing background blobs -->
+  <div class="glow-blob blob-1"></div>
+  <div class="glow-blob blob-2"></div>
+
+  <div class="app-container">
+    <!-- SIDEBAR -->
+    <aside>
+      <div class="brand-section">
+        <div class="brand-logo"><i class="fa-solid fa-chart-line"></i> nse / <span>forecaster</span></div>
+        <div class="auth-section">
+          <button id="authButton" class="auth-btn">Sign In</button>
+          <div id="userProfile" class="user-profile" style="display: none;">
+            <span id="userEmail" class="user-email"></span>
+            <button id="signOutBtn" class="sign-out-btn" title="Sign Out"><i class="fa-solid fa-arrow-right-from-bracket"></i></button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Search Container -->
+      <div class="search-container">
+        <div class="search-input-wrapper">
+          <input type="text" id="searchInput" class="search-input" placeholder="Search stock (e.g. Zomato, Reliance)..." autocomplete="off">
+          <i class="fa-solid fa-magnifying-glass" style="position: absolute; right: 16px; color: var(--text-muted);"></i>
+        </div>
+        <!-- Results Dropdown -->
+        <div id="searchResults" class="search-results-dropdown" style="display: none;"></div>
+      </div>
+
+      <!-- Tabs -->
+      <div class="tabs-container">
+        <button class="tab-btn active" data-category="all">All</button>
+        <button class="tab-btn" data-category="watchlist" id="watchlistTab" style="display: none;"><i class="fa-solid fa-star"></i> Watchlist</button>
+        <button class="tab-btn" data-category="Largecap">Large Cap</button>
+        <button class="tab-btn" data-category="Midcap">Mid Cap</button>
+        <button class="tab-btn" data-category="Smallcap">Small Cap</button>
+      </div>
+
+      <!-- Stocks List -->
+      <div class="stocks-list-wrapper" id="stocksList">
+        <!-- Stock items will be inserted dynamically -->
+      </div>
+    </aside>
+
+    <!-- MAIN DASHBOARD CONTENT -->
+    <main>
+      <!-- Dashboard Header -->
+      <div class="dashboard-header">
+        <div class="stock-title-area">
+          <div class="stock-title-row">
+            <h1 class="stock-name" id="stockName">--</h1>
+            <button id="toggleWatchlistBtn" class="watchlist-btn" style="display: none;" title="Add to Watchlist">
+              <i class="fa-regular fa-star" id="watchlistIcon"></i>
+            </button>
+            <span class="live-badge">Live Ticker</span>
+          </div>
+          <div class="stock-ticker-path" id="stockTickerPath">-- · NSE</div>
+        </div>
+
+        <div class="price-container">
+          <div class="price-row">
+            <span class="current-price" id="currentPrice">₹0.00</span>
+            <span class="change-indicator" id="changeIndicator">--%</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Integration & Action Banner -->
+      <div class="action-row">
+        <div class="forecast-banner">
+          <span class="forecast-label"><i class="fa-solid fa-robot"></i> Model Tomorrow Forecast:</span>
+          <span class="forecast-verdict bullish" id="forecastVerdict">BULLISH (0.0%)</span>
+        </div>
+        
+        <a href="#" target="_blank" class="groww-button" id="growwLink">
+          <i class="fa-solid fa-wallet"></i> Trade on Groww
+        </a>
+      </div>
+
+      <!-- Interactive Chart -->
+      <div class="chart-card">
+        <div class="chart-header-row">
+          <h2 class="chart-title">Historical Trends & Prediction Overlay</h2>
+          <div class="chart-legend">
+            <div class="legend-item">
+              <span class="legend-color" style="background: var(--cyan);"></span> Price Trend
+            </div>
+            <div class="legend-item">
+              <span class="legend-color" style="background: var(--amber);"></span> 5-day SMA
+            </div>
+            <div class="legend-item">
+              <span class="legend-color" style="background: rgba(0, 212, 255, 0.15); border: 1px dashed var(--cyan);"></span> Prediction Zone
+            </div>
+          </div>
+        </div>
+        <canvas id="chartCanvas"></canvas>
+      </div>
+
+      <!-- Metrics Row -->
+      <h3 class="metrics-section-title">Model Diagnostics</h3>
+      <div class="metrics-row">
+        <div class="metric-card accuracy">
+          <div class="metric-label">Accuracy</div>
+          <div class="metric-value" id="metricAccuracy">--%</div>
+          <div class="metric-subtext">Percentage of correct forecasts</div>
+        </div>
+        <div class="metric-card f1">
+          <div class="metric-label">F1-Score</div>
+          <div class="metric-value" id="metricF1">--</div>
+          <div class="metric-subtext">Harmonic mean of precision & recall</div>
+        </div>
+        <div class="metric-card precision">
+          <div class="metric-label">Precision</div>
+          <div class="metric-value" id="metricPrecision">--%</div>
+          <div class="metric-subtext">Rate of true positive alerts</div>
+        </div>
+        <div class="metric-card recall">
+          <div class="metric-label">Recall</div>
+          <div class="metric-value" id="metricRecall">--%</div>
+          <div class="metric-subtext">Rate of positive trends captured</div>
+        </div>
+        <div class="metric-card auc">
+          <div class="metric-label">AUC-ROC</div>
+          <div class="metric-value" id="metricAuc">--</div>
+          <div class="metric-subtext">Model discriminative power</div>
+        </div>
+      </div>
+
+      <!-- Details Row (Matrix + Features) -->
+      <div class="details-row">
+        <!-- Confusion Matrix Panel -->
+        <div class="detail-panel">
+          <h3>Confusion Matrix <span>· Test Set Results</span></h3>
+          <div class="matrix">
+            <div class="matrix-corner"></div>
+            <div class="matrix-hlabel">Pred: UP</div>
+            <div class="matrix-hlabel">Pred: DOWN</div>
+            
+            <div class="matrix-vlabel">Actual: UP</div>
+            <div class="matrix-cell cell-tp">
+              <span class="val" id="matrixTP">--</span>
+              <span class="lbl">True Pos (TP)</span>
+            </div>
+            <div class="matrix-cell cell-fn">
+              <span class="val" id="matrixFN">--</span>
+              <span class="lbl">False Neg (FN)</span>
+            </div>
+
+            <div class="matrix-vlabel">Actual: DOWN</div>
+            <div class="matrix-cell cell-fp">
+              <span class="val" id="matrixFP">--</span>
+              <span class="lbl">False Pos (FP)</span>
+            </div>
+            <div class="matrix-cell cell-tn">
+              <span class="val" id="matrixTN">--</span>
+              <span class="lbl">True Neg (TN)</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Feature Importance Panel -->
+        <div class="detail-panel">
+          <h3>Feature Importance <span>· Relative Impact (SHAP)</span></h3>
+          <div class="features-list" id="featuresList">
+            <!-- Feature rows dynamically loaded -->
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Auth Modal -->
+  <div id="authModal" class="modal-overlay" style="display: none;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="modalTitle">Sign In</h2>
+        <button id="closeModalBtn" class="close-btn"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body">
+        <button id="googleSignInBtn" class="google-btn">
+          <i class="fa-brands fa-google"></i> Continue with Google
+        </button>
+        <div class="divider"><span>OR</span></div>
+        <form id="authForm">
+          <div class="input-group">
+            <label for="emailInput">Email</label>
+            <input type="email" id="emailInput" required>
+          </div>
+          <div class="input-group">
+            <label for="passwordInput">Password</label>
+            <input type="password" id="passwordInput" required>
+          </div>
+          <div id="authError" class="auth-error" style="display: none;"></div>
+          <button type="submit" id="authSubmitBtn" class="submit-btn">Sign In</button>
+        </form>
+        <p class="auth-switch">
+          <span id="authSwitchText">Don't have an account?</span>
+          <button id="authSwitchBtn" class="switch-btn">Sign Up</button>
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
