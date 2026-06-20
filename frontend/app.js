@@ -11,7 +11,7 @@ const state = {
 };
 
 const API_BASE = window.location.origin;
-let supabase = null;
+
 
 // DOM Elements
 const stocksListEl = document.getElementById('stocksList');
