@@ -126,14 +126,14 @@ async function handleAuthChange(session) {
 // ── AUTH LISTENERS ──
 function setupAuthListeners() {
   if (authButton) authButton.onclick = () => {
-    authModal.style.display = 'flex';
+    if (authModal) authModal.style.display = 'flex';
     isSignUp = false;
     updateModalUI();
   };
 
   if (closeModalBtn) closeModalBtn.onclick = () => {
-    authModal.style.display = 'none';
-    authError.style.display = 'none';
+    if (authModal) authModal.style.display = 'none';
+    if (authError) authError.style.display = 'none';
   };
 
   if (authSwitchBtn) authSwitchBtn.onclick = () => {
