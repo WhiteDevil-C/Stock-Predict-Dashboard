@@ -410,21 +410,24 @@ async function performSearch(query) {
 async function selectStock(ticker) {
   state.selectedTicker = ticker;
 
-  // Highlight in sidebar
+  // Highlight in sidebar immediately
   const items = document.querySelectorAll('.stock-item');
   items.forEach(el => {
     const itemTicker = el.querySelector('.stock-item-ticker').textContent;
-    if (itemTicker === ticker) {
-      el.classList.add('active');
-    } else {
-      el.classList.remove('active');
-    }
+    el.classList.toggle('active', itemTicker === ticker);
   });
+
+  // Show loading state instantly so UI feels responsive
+  if(stockNameEl) stockNameEl.textContent = ticker;
+  if(stockTickerPathEl) stockTickerPathEl.textContent = `${ticker} · NSE · Loading...`;
+  if(currentPriceEl) currentPriceEl.textContent = '₹--';
+  if(changeIndicatorEl) changeIndicatorEl.textContent = '--%';
+  if(forecastVerdictEl) forecastVerdictEl.textContent = 'Analysing...';
+  if(forecastVerdictEl) forecastVerdictEl.className = 'forecast-verdict';
 
   fetchStockDetails(ticker);
   updateWatchlistButtonState();
 }
-
 // ── GET DETAILS & RENDER ──
 async function fetchStockDetails(ticker, forceRefresh = false) {
   try {
