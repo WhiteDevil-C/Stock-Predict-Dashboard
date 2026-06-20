@@ -1,16 +1,18 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Stock Market Trend Forecasting · ML Dashboard</title>
   <link rel="shortcut icon" href="#" />
   <link rel="stylesheet" href="style.css">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="supabase.js"></script>
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
   <!-- FontAwesome Icons for graphics quality -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
+
 <body>
 
   <!-- Glowing background blobs -->
@@ -26,7 +28,8 @@
           <button id="authButton" class="auth-btn">Sign In</button>
           <div id="userProfile" class="user-profile" style="display: none;">
             <span id="userEmail" class="user-email"></span>
-            <button id="signOutBtn" class="sign-out-btn" title="Sign Out"><i class="fa-solid fa-arrow-right-from-bracket"></i></button>
+            <button id="signOutBtn" class="sign-out-btn" title="Sign Out"><i
+                class="fa-solid fa-arrow-right-from-bracket"></i></button>
           </div>
         </div>
       </div>
@@ -34,8 +37,10 @@
       <!-- Search Container -->
       <div class="search-container">
         <div class="search-input-wrapper">
-          <input type="text" id="searchInput" class="search-input" placeholder="Search stock (e.g. Zomato, Reliance)..." autocomplete="off">
-          <i class="fa-solid fa-magnifying-glass" style="position: absolute; right: 16px; color: var(--text-muted);"></i>
+          <input type="text" id="searchInput" class="search-input" placeholder="Search stock (e.g. Zomato, Reliance)..."
+            autocomplete="off">
+          <i class="fa-solid fa-magnifying-glass"
+            style="position: absolute; right: 16px; color: var(--text-muted);"></i>
         </div>
         <!-- Results Dropdown -->
         <div id="searchResults" class="search-results-dropdown" style="display: none;"></div>
@@ -44,7 +49,8 @@
       <!-- Tabs -->
       <div class="tabs-container">
         <button class="tab-btn active" data-category="all">All</button>
-        <button class="tab-btn" data-category="watchlist" id="watchlistTab" style="display: none;"><i class="fa-solid fa-star"></i> Watchlist</button>
+        <button class="tab-btn" data-category="watchlist" id="watchlistTab" style="display: none;"><i
+            class="fa-solid fa-star"></i> Watchlist</button>
         <button class="tab-btn" data-category="Largecap">Large Cap</button>
         <button class="tab-btn" data-category="Midcap">Mid Cap</button>
         <button class="tab-btn" data-category="Smallcap">Small Cap</button>
@@ -85,7 +91,7 @@
           <span class="forecast-label"><i class="fa-solid fa-robot"></i> Model Tomorrow Forecast:</span>
           <span class="forecast-verdict bullish" id="forecastVerdict">BULLISH (0.0%)</span>
         </div>
-        
+
         <a href="#" target="_blank" class="groww-button" id="growwLink">
           <i class="fa-solid fa-wallet"></i> Trade on Groww
         </a>
@@ -103,7 +109,8 @@
               <span class="legend-color" style="background: var(--amber);"></span> 5-day SMA
             </div>
             <div class="legend-item">
-              <span class="legend-color" style="background: rgba(0, 212, 255, 0.15); border: 1px dashed var(--cyan);"></span> Prediction Zone
+              <span class="legend-color"
+                style="background: rgba(0, 212, 255, 0.15); border: 1px dashed var(--cyan);"></span> Prediction Zone
             </div>
           </div>
         </div>
@@ -149,7 +156,7 @@
             <div class="matrix-corner"></div>
             <div class="matrix-hlabel">Pred: UP</div>
             <div class="matrix-hlabel">Pred: DOWN</div>
-            
+
             <div class="matrix-vlabel">Actual: UP</div>
             <div class="matrix-cell cell-tp">
               <span class="val" id="matrixTP">--</span>
@@ -217,4 +224,5 @@
 
   <script src="app.js"></script>
 </body>
+
 </html>

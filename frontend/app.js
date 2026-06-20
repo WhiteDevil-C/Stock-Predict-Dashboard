@@ -11,7 +11,7 @@ const state = {
 };
 
 const API_BASE = window.location.origin;
-
+let supabase = null;
 
 // DOM Elements
 const stocksListEl = document.getElementById('stocksList');
@@ -74,11 +74,11 @@ async function initSupabase() {
     const config = await res.json();
     if (config.supabase_url && config.supabase_anon_key && window.supabase) {
       supabase = window.supabase.createClient(config.supabase_url, config.supabase_anon_key);
-      
+
       // Check initial session
       const { data: { session } } = await supabase.auth.getSession();
       await handleAuthChange(session);
-      
+
       // Listen for changes
       supabase.auth.onAuthStateChange(async (_event, session) => {
         await handleAuthChange(session);
@@ -96,71 +96,71 @@ async function initSupabase() {
 async function handleAuthChange(session) {
   state.session = session;
   state.user = session?.user || null;
-  
+
   if (state.user) {
-    if(authButton) authButton.style.display = 'none';
-    if(userProfile) userProfile.style.display = 'flex';
-    if(userEmail) userEmail.textContent = state.user.email;
-    if(watchlistTab) watchlistTab.style.display = 'inline-block';
-    
+    if (authButton) authButton.style.display = 'none';
+    if (userProfile) userProfile.style.display = 'flex';
+    if (userEmail) userEmail.textContent = state.user.email;
+    if (watchlistTab) watchlistTab.style.display = 'inline-block';
+
     // Fetch watchlist and then stocks
     await fetchWatchlist();
     await fetchStocksList();
     if (state.selectedTicker) updateWatchlistButtonState();
   } else {
-    if(authButton) authButton.style.display = 'block';
-    if(userProfile) userProfile.style.display = 'none';
-    if(watchlistTab) watchlistTab.style.display = 'none';
+    if (authButton) authButton.style.display = 'block';
+    if (userProfile) userProfile.style.display = 'none';
+    if (watchlistTab) watchlistTab.style.display = 'none';
     state.watchlist = [];
-    
+
     if (state.activeCategory === 'watchlist') {
       state.activeCategory = 'all';
       document.querySelector('[data-category="all"]').click();
     }
-    
-    if(toggleWatchlistBtn) toggleWatchlistBtn.style.display = 'none';
+
+    if (toggleWatchlistBtn) toggleWatchlistBtn.style.display = 'none';
     await fetchStocksList();
   }
 }
 
 // ── AUTH LISTENERS ──
 function setupAuthListeners() {
-  if(authButton) authButton.onclick = () => {
+  if (authButton) authButton.onclick = () => {
     authModal.style.display = 'flex';
     isSignUp = false;
     updateModalUI();
   };
-  
-  if(closeModalBtn) closeModalBtn.onclick = () => {
+
+  if (closeModalBtn) closeModalBtn.onclick = () => {
     authModal.style.display = 'none';
     authError.style.display = 'none';
   };
-  
-  if(authSwitchBtn) authSwitchBtn.onclick = () => {
+
+  if (authSwitchBtn) authSwitchBtn.onclick = () => {
     isSignUp = !isSignUp;
     updateModalUI();
   };
-  
-  if(googleSignInBtn) googleSignInBtn.onclick = async () => {
+
+  if (googleSignInBtn) googleSignInBtn.onclick = async () => {
     if (!supabase) return;
     await supabase.auth.signInWithOAuth({ provider: 'google' });
   };
-  
-  if(signOutBtn) signOutBtn.onclick = async () => {
+
+  if (signOutBtn) signOutBtn.onclick = async () => {
     if (!supabase) return;
     await supabase.auth.signOut();
   };
-  
-  if(authForm) authForm.onsubmit = async (e) => {
+
+  if (authForm) authForm.onsubmit = async (e) => {
     e.preventDefault();
     if (!supabase) return;
-    
+
     const email = emailInput.value;
     const password = passwordInput.value;
     authError.style.display = 'none';
     authSubmitBtn.disabled = true;
     authSubmitBtn.textContent = "Processing...";
-    
+
     try {
       if (isSignUp) {
         const { error } = await supabase.auth.signUp({ email, password });
@@ -204,14 +204,14 @@ function setupEventListeners() {
 
   // Debounced search
   let debounceTimeout;
-  if(searchInputEl) searchInputEl.addEventListener('input', (e) => {
+  if (searchInputEl) searchInputEl.addEventListener('input', (e) => {
     clearTimeout(debounceTimeout);
     const query = e.target.value.trim();
     if (query.length < 2) {
       searchResultsEl.style.display = 'none';
       return;
     }
-    
+
     debounceTimeout = setTimeout(() => {
       performSearch(query);
     }, 400);
@@ -223,13 +223,13 @@ function setupEventListeners() {
       searchResultsEl.style.display = 'none';
     }
   });
-  
+
   // Watchlist toggle
-  if(toggleWatchlistBtn) toggleWatchlistBtn.onclick = async () => {
+  if (toggleWatchlistBtn) toggleWatchlistBtn.onclick = async () => {
     if (!state.user || !state.selectedTicker) return;
     const ticker = state.selectedTicker;
     const isWatched = state.watchlist.some(w => w.ticker === ticker);
-    
+
     // Optimistic UI update
     const previousWatchlist = [...state.watchlist];
     if (isWatched) {
@@ -238,7 +238,7 @@ function setupEventListeners() {
       state.watchlist.push({ ticker });
     }
     updateWatchlistButtonState();
-    
+
     try {
       if (isWatched) {
         await fetch(`${API_BASE}/api/watchlist/${ticker}`, {
@@ -248,9 +248,9 @@ function setupEventListeners() {
       } else {
         await fetch(`${API_BASE}/api/watchlist?ticker=${ticker}`, {
           method: 'POST',
-          headers: { 
+          headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${state.session.access_token}` 
+            'Authorization': `Bearer ${state.session.access_token}`
           }
         });
       }
@@ -291,7 +291,7 @@ async function fetchStocksList() {
     if (result.success) {
       state.stocks = result.data;
       renderStocksSidebar();
-      
+
       // Default selection (Reliance)
       if (state.stocks.length > 0 && !state.selectedTicker) {
         selectStock(state.stocks[0].ticker);
@@ -303,9 +303,9 @@ async function fetchStocksList() {
 }
 
 function renderStocksSidebar() {
-  if(!stocksListEl) return;
+  if (!stocksListEl) return;
   stocksListEl.innerHTML = '';
-  
+
   let filtered = [];
   if (state.activeCategory === 'watchlist') {
     filtered = state.watchlist;
@@ -319,15 +319,15 @@ function renderStocksSidebar() {
       return s.category.toLowerCase() === state.activeCategory.toLowerCase();
     });
   }
-  
+
   filtered.forEach(stock => {
     const isSelected = stock.ticker === state.selectedTicker;
     const item = document.createElement('div');
     item.className = `stock-item ${isSelected ? 'active' : ''}`;
     item.onclick = () => selectStock(stock.ticker);
-    
+
     const capClass = stock.category.toLowerCase().replace('cap', '');
-    
+
     item.innerHTML = `
       <div class="stock-item-info">
         <span class="stock-item-ticker">${stock.ticker}</span>
@@ -343,7 +343,7 @@ function renderStocksSidebar() {
 
 function updateWatchlistButtonState() {
   if (!toggleWatchlistBtn || !watchlistIcon) return;
-  
+
   if (!state.user) {
     toggleWatchlistBtn.style.display = 'none';
     return;
@@ -366,14 +366,14 @@ async function performSearch(query) {
   try {
     const response = await fetch(`${API_BASE}/api/stocks/search?q=${encodeURIComponent(query)}`);
     if (!response.ok) {
-      if(searchResultsEl) searchResultsEl.innerHTML = `<div class="search-result-item" style="color: var(--text-muted);">No stocks found</div>`;
-      if(searchResultsEl) searchResultsEl.style.display = 'block';
+      if (searchResultsEl) searchResultsEl.innerHTML = `<div class="search-result-item" style="color: var(--text-muted);">No stocks found</div>`;
+      if (searchResultsEl) searchResultsEl.style.display = 'block';
       return;
     }
     const result = await response.json();
-    
+
     if (result.success && result.results.length > 0) {
-      if(searchResultsEl) searchResultsEl.innerHTML = '';
+      if (searchResultsEl) searchResultsEl.innerHTML = '';
       result.results.forEach(item => {
         const row = document.createElement('div');
         row.className = 'search-result-item';
@@ -389,27 +389,27 @@ async function performSearch(query) {
         `;
         row.onclick = () => {
           selectStock(item.ticker);
-          if(searchResultsEl) searchResultsEl.style.display = 'none';
-          if(searchInputEl) searchInputEl.value = '';
+          if (searchResultsEl) searchResultsEl.style.display = 'none';
+          if (searchInputEl) searchInputEl.value = '';
           // Refresh list to include newly registered stock
           fetchStocksList();
         };
-        if(searchResultsEl) searchResultsEl.appendChild(row);
+        if (searchResultsEl) searchResultsEl.appendChild(row);
       });
-      if(searchResultsEl) searchResultsEl.style.display = 'block';
+      if (searchResultsEl) searchResultsEl.style.display = 'block';
     } else {
-      if(searchResultsEl) searchResultsEl.style.display = 'none';
+      if (searchResultsEl) searchResultsEl.style.display = 'none';
     }
   } catch (error) {
     console.error("Search error:", error);
-    if(searchResultsEl) searchResultsEl.style.display = 'none';
+    if (searchResultsEl) searchResultsEl.style.display = 'none';
   }
 }
 
 // ── SELECT STOCK ──
 async function selectStock(ticker) {
   state.selectedTicker = ticker;
-  
+
   // Highlight in sidebar
   const items = document.querySelectorAll('.stock-item');
   items.forEach(el => {
@@ -426,12 +426,12 @@ async function selectStock(ticker) {
 }
 
 // ── GET DETAILS & RENDER ──
-async function fetchStockDetails(ticker, forceRefresh=false) {
+async function fetchStockDetails(ticker, forceRefresh = false) {
   try {
     const url = `${API_BASE}/api/stocks/details/${ticker}` + (forceRefresh ? "?refresh=true" : "");
     const response = await fetch(url);
     const details = await response.json();
-    
+
     if (details.success) {
       renderDetails(details);
     }
@@ -442,14 +442,14 @@ async function fetchStockDetails(ticker, forceRefresh=false) {
 
 function renderDetails(data) {
   // Update header info
-  if(stockNameEl) stockNameEl.textContent = data.company_name;
-  if(stockTickerPathEl) stockTickerPathEl.textContent = `${data.ticker} · NSE · ${data.category}`;
-  if(currentPriceEl) currentPriceEl.textContent = `₹${data.current_price.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
-  
+  if (stockNameEl) stockNameEl.textContent = data.company_name;
+  if (stockTickerPathEl) stockTickerPathEl.textContent = `${data.ticker} · NSE · ${data.category}`;
+  if (currentPriceEl) currentPriceEl.textContent = `₹${data.current_price.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
+
   // Daily change indicator
   const sign = data.change_pct >= 0 ? '+' : '';
   const dir = data.change_pct >= 0 ? '▲' : '▼';
-  if(changeIndicatorEl) {
+  if (changeIndicatorEl) {
     changeIndicatorEl.textContent = `${dir} ${sign}${data.change_pct}%`;
     if (data.change_pct >= 0) {
       changeIndicatorEl.className = 'change-indicator up';
@@ -459,7 +459,7 @@ function renderDetails(data) {
   }
 
   // Tomorrow model forecast
-  if(forecastVerdictEl) {
+  if (forecastVerdictEl) {
     forecastVerdictEl.textContent = `${data.prediction} (${data.probability}%)`;
     if (data.prediction === 'BULLISH') {
       forecastVerdictEl.className = 'forecast-verdict bullish';
@@ -469,23 +469,23 @@ function renderDetails(data) {
   }
 
   // Groww Deep Link Integration
-  if(growwLinkEl) growwLinkEl.href = `https://groww.in/stocks/${data.groww_slug}`;
+  if (growwLinkEl) growwLinkEl.href = `https://groww.in/stocks/${data.groww_slug}`;
 
   // Diagnostics metrics
-  if(metricAccuracyEl) metricAccuracyEl.textContent = `${data.metrics.accuracy}%`;
-  if(metricF1El) metricF1El.textContent = data.metrics.f1;
-  if(metricPrecisionEl) metricPrecisionEl.textContent = `${data.metrics.precision}%`;
-  if(metricRecallEl) metricRecallEl.textContent = `${data.metrics.recall}%`;
-  if(metricAucEl) metricAucEl.textContent = data.metrics.auc_roc;
+  if (metricAccuracyEl) metricAccuracyEl.textContent = `${data.metrics.accuracy}%`;
+  if (metricF1El) metricF1El.textContent = data.metrics.f1;
+  if (metricPrecisionEl) metricPrecisionEl.textContent = `${data.metrics.precision}%`;
+  if (metricRecallEl) metricRecallEl.textContent = `${data.metrics.recall}%`;
+  if (metricAucEl) metricAucEl.textContent = data.metrics.auc_roc;
 
   // Confusion matrix
-  if(matrixTPEl) matrixTPEl.textContent = data.confusion_matrix.tp;
-  if(matrixTNEl) matrixTNEl.textContent = data.confusion_matrix.tn;
-  if(matrixFPEl) matrixFPEl.textContent = data.confusion_matrix.fp;
-  if(matrixFNEl) matrixFNEl.textContent = data.confusion_matrix.fn;
+  if (matrixTPEl) matrixTPEl.textContent = data.confusion_matrix.tp;
+  if (matrixTNEl) matrixTNEl.textContent = data.confusion_matrix.tn;
+  if (matrixFPEl) matrixFPEl.textContent = data.confusion_matrix.fp;
+  if (matrixFNEl) matrixFNEl.textContent = data.confusion_matrix.fn;
 
   // Feature Importance progress bars
-  if(featuresListEl) {
+  if (featuresListEl) {
     featuresListEl.innerHTML = '';
     data.feature_importances.forEach(feat => {
       const row = document.createElement('div');
@@ -498,7 +498,7 @@ function renderDetails(data) {
         <div class="feature-pct">${feat.importance}%</div>
       `;
       featuresListEl.appendChild(row);
-      
+
       // Trigger animation frame for CSS transitions to work
       setTimeout(() => {
         row.querySelector('.feature-bar').style.width = `${feat.importance}%`;
@@ -513,13 +513,13 @@ function renderDetails(data) {
 // ── CHART.JS INTEGRATION ──
 function renderChart(data) {
   const canvas = document.getElementById('chartCanvas');
-  if(!canvas) return;
+  if (!canvas) return;
   const ctx = canvas.getContext('2d');
-  
+
   // Prepare labels (Dates) and data series
   const labels = data.history.map(h => h.date);
   const prices = data.history.map(h => h.close);
-  
+
   // Calculate a basic 5-day SMA for SMA line display
   const sma = [];
   for (let i = 0; i < prices.length; i++) {
@@ -536,18 +536,18 @@ function renderChart(data) {
   const isUp = data.prediction === 'BULLISH';
   const targetChange = isUp ? 0.015 : -0.015; // Simulate target line delta (+/-1.5%)
   const predictedPrice = Number((lastPrice * (1 + targetChange)).toFixed(2));
-  
+
   // Append future date for the forecast tick
   const todayDate = new Date(labels[labels.length - 1]);
   const tomorrowDate = new Date(todayDate);
   tomorrowDate.setDate(tomorrowDate.getDate() + 1);
   const tomorrowStr = tomorrowDate.toISOString().split('T')[0];
-  
+
   // Create copies for display
   const chartLabels = [...labels, tomorrowStr];
   const mainPrices = [...prices, null];
   const smaPrices = [...sma, null];
-  
+
   // Forecast projection dataset (dotted segment linking today's close and tomorrow's forecast)
   const projectionPrices = Array(prices.length - 1).fill(null);
   projectionPrices.push(lastPrice); // link starting at today
@@ -618,13 +618,13 @@ function renderChart(data) {
           borderWidth: 1,
           displayColors: false,
           callbacks: {
-            title: function(context) {
+            title: function (context) {
               if (context[0].dataIndex === chartLabels.length - 1) {
                 return 'MODEL FORECAST';
               }
               return context[0].label;
             },
-            label: function(context) {
+            label: function (context) {
               let label = context.dataset.label || '';
               if (label) {
                 label += ': ';
@@ -661,7 +661,7 @@ function renderChart(data) {
               size: 9
             },
             color: '#94A3B8',
-            callback: function(value) {
+            callback: function (value) {
               return '₹' + value.toLocaleString('en-IN');
             }
           }
