@@ -382,7 +382,7 @@ main {
 
 .current-price {
   font-family: var(--mono);
-  font-size: 36px;
+  font-size: 48px;
   font-weight: 700;
 }
 
@@ -418,7 +418,7 @@ main {
 
 .forecast-verdict {
   font-family: var(--mono);
-  font-size: 18px;
+  font-size: 24px;
   font-weight: 700;
   padding: 6px 16px;
   border-radius: 8px;
@@ -456,6 +456,91 @@ main {
   background: #00b386;
   transform: translateY(-1px);
   box-shadow: 0 6px 16px rgba(0, 208, 156, 0.35);
+}
+
+/* Badges */
+.recommendation-badge {
+  font-family: var(--data);
+  font-size: 12px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 6px;
+  text-transform: uppercase;
+  margin-left: 8px;
+}
+.recommendation-badge.buy { background: rgba(16, 185, 129, 0.2); color: var(--green); border: 1px solid var(--green); }
+.recommendation-badge.sell { background: rgba(239, 68, 68, 0.2); color: var(--red); border: 1px solid var(--red); }
+.recommendation-badge.hold { background: rgba(245, 158, 11, 0.2); color: var(--amber); border: 1px solid var(--amber); }
+
+.confidence-text {
+  font-family: var(--data);
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-left: 8px;
+}
+
+/* Fundamentals Grid */
+.fundamentals-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+.fund-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.fund-label {
+  font-family: var(--data);
+  font-size: 11px;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.fund-value {
+  font-family: var(--mono);
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+/* Skeleton Loading */
+.skeleton-text {
+  position: relative;
+  overflow: hidden;
+  color: transparent !important;
+  background-color: rgba(255, 255, 255, 0.05) !important;
+  border-radius: 4px;
+}
+.skeleton-box {
+  position: relative;
+  overflow: hidden;
+  color: transparent !important;
+  background-color: rgba(255, 255, 255, 0.05) !important;
+  border-color: transparent !important;
+}
+
+.skeleton-text::after, .skeleton-box::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 200%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.08), transparent);
+  animation: shimmer 1.5s infinite linear;
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(100%); }
 }
 
 /* ── CHART ZONE ── */

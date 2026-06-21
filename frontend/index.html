@@ -79,8 +79,8 @@
 
         <div class="price-container">
           <div class="price-row">
-            <span class="current-price" id="currentPrice">₹0.00</span>
-            <span class="change-indicator" id="changeIndicator">--%</span>
+            <span class="current-price skeleton-text" id="currentPrice">₹0.00</span>
+            <span class="change-indicator skeleton-text" id="changeIndicator">--%</span>
           </div>
         </div>
       </div>
@@ -89,12 +89,34 @@
       <div class="action-row">
         <div class="forecast-banner">
           <span class="forecast-label"><i class="fa-solid fa-robot"></i> Model Tomorrow Forecast:</span>
-          <span class="forecast-verdict bullish" id="forecastVerdict">BULLISH (0.0%)</span>
+          <span class="forecast-verdict bullish skeleton-text" id="forecastVerdict">BULLISH (0.0%)</span>
+          <span class="recommendation-badge skeleton-box" id="recBadge">HOLD</span>
+          <span class="confidence-text skeleton-text" id="confidenceText">--% Confidence</span>
         </div>
 
         <a href="#" target="_blank" class="groww-button" id="growwLink">
           <i class="fa-solid fa-wallet"></i> Trade on Groww
         </a>
+      </div>
+
+      <!-- Fundamentals Row -->
+      <div class="fundamentals-grid" id="fundamentalsGrid">
+        <div class="fund-card">
+          <div class="fund-label">Market Cap</div>
+          <div class="fund-value skeleton-text" id="fundMarketCap">--</div>
+        </div>
+        <div class="fund-card">
+          <div class="fund-label">P/E Ratio</div>
+          <div class="fund-value skeleton-text" id="fundPE">--</div>
+        </div>
+        <div class="fund-card">
+          <div class="fund-label">52W High/Low</div>
+          <div class="fund-value skeleton-text" id="fund52W">--</div>
+        </div>
+        <div class="fund-card">
+          <div class="fund-label">Sector</div>
+          <div class="fund-value skeleton-text" id="fundSector">--</div>
+        </div>
       </div>
 
       <!-- Interactive Chart -->

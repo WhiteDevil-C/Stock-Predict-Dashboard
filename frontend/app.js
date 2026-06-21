@@ -25,7 +25,14 @@ const stockTickerPathEl = document.getElementById('stockTickerPath');
 const currentPriceEl = document.getElementById('currentPrice');
 const changeIndicatorEl = document.getElementById('changeIndicator');
 const forecastVerdictEl = document.getElementById('forecastVerdict');
+const recBadgeEl = document.getElementById('recBadge');
+const confidenceTextEl = document.getElementById('confidenceText');
 const growwLinkEl = document.getElementById('growwLink');
+
+const fundMarketCapEl = document.getElementById('fundMarketCap');
+const fundPEEl = document.getElementById('fundPE');
+const fund52WEl = document.getElementById('fund52W');
+const fundSectorEl = document.getElementById('fundSector');
 
 const metricAccuracyEl = document.getElementById('metricAccuracy');
 const metricF1El = document.getElementById('metricF1');
@@ -420,10 +427,36 @@ async function selectStock(ticker) {
   // Show loading state instantly so UI feels responsive
   if(stockNameEl) stockNameEl.textContent = ticker;
   if(stockTickerPathEl) stockTickerPathEl.textContent = `${ticker} · NSE · Loading...`;
-  if(currentPriceEl) currentPriceEl.textContent = '₹--';
-  if(changeIndicatorEl) changeIndicatorEl.textContent = '--%';
-  if(forecastVerdictEl) forecastVerdictEl.textContent = 'Analysing...';
-  if(forecastVerdictEl) forecastVerdictEl.className = 'forecast-verdict';
+  if(currentPriceEl) {
+    currentPriceEl.textContent = '₹--';
+    currentPriceEl.classList.add('skeleton-text');
+  }
+  if(changeIndicatorEl) {
+    changeIndicatorEl.textContent = '--%';
+    changeIndicatorEl.classList.add('skeleton-text');
+  }
+  if(forecastVerdictEl) {
+    forecastVerdictEl.textContent = 'Analysing...';
+    forecastVerdictEl.className = 'forecast-verdict skeleton-text';
+  }
+  if(recBadgeEl) {
+    recBadgeEl.textContent = 'HOLD';
+    recBadgeEl.className = 'recommendation-badge skeleton-box';
+    recBadgeEl.style.display = 'inline-block';
+  }
+  if(confidenceTextEl) {
+    confidenceTextEl.textContent = '--% Confidence';
+    confidenceTextEl.classList.add('skeleton-text');
+    confidenceTextEl.style.display = 'inline-block';
+  }
+
+  const fundEls = [fundMarketCapEl, fundPEEl, fund52WEl, fundSectorEl];
+  fundEls.forEach(el => {
+    if (el) {
+      el.textContent = '--';
+      el.classList.add('skeleton-text');
+    }
+  });
 
   fetchStockDetails(ticker);
   updateWatchlistButtonState();
@@ -444,6 +477,18 @@ async function fetchStockDetails(ticker, forceRefresh = false) {
 }
 
 function renderDetails(data) {
+  // Remove skeleton classes
+  if(currentPriceEl) currentPriceEl.classList.remove('skeleton-text');
+  if(changeIndicatorEl) changeIndicatorEl.classList.remove('skeleton-text');
+  if(forecastVerdictEl) forecastVerdictEl.classList.remove('skeleton-text');
+  if(recBadgeEl) recBadgeEl.classList.remove('skeleton-box');
+  if(confidenceTextEl) confidenceTextEl.classList.remove('skeleton-text');
+  
+  const fundEls = [fundMarketCapEl, fundPEEl, fund52WEl, fundSectorEl];
+  fundEls.forEach(el => {
+    if (el) el.classList.remove('skeleton-text');
+  });
+
   // Update header info
   if (stockNameEl) stockNameEl.textContent = data.company_name;
   if (stockTickerPathEl) stockTickerPathEl.textContent = `${data.ticker} · NSE · ${data.category}`;
@@ -468,6 +513,35 @@ function renderDetails(data) {
       forecastVerdictEl.className = 'forecast-verdict bullish';
     } else {
       forecastVerdictEl.className = 'forecast-verdict bearish';
+    }
+  }
+
+  if (recBadgeEl) {
+    recBadgeEl.textContent = data.recommendation || 'HOLD';
+    recBadgeEl.className = `recommendation-badge ${(data.recommendation || 'hold').toLowerCase()}`;
+    recBadgeEl.style.display = 'inline-block';
+  }
+  if (confidenceTextEl) {
+    confidenceTextEl.textContent = `${data.confidence_score || '--'}% Confidence`;
+    confidenceTextEl.style.display = 'inline-block';
+  }
+
+  // Fundamentals
+  if (data.fundamentals) {
+    if (fundMarketCapEl) {
+      const mc = data.fundamentals.marketCap;
+      fundMarketCapEl.textContent = mc > 0 ? `₹${(mc / 10000000).toLocaleString('en-IN', { maximumFractionDigits: 0 })} Cr` : '--';
+    }
+    if (fundPEEl) {
+      fundPEEl.textContent = data.fundamentals.peRatio > 0 ? data.fundamentals.peRatio.toFixed(2) : '--';
+    }
+    if (fund52WEl) {
+      const h = data.fundamentals.fiftyTwoWeekHigh;
+      const l = data.fundamentals.fiftyTwoWeekLow;
+      fund52WEl.textContent = (h && l) ? `₹${h.toFixed(2)} / ₹${l.toFixed(2)}` : '--';
+    }
+    if (fundSectorEl) {
+      fundSectorEl.textContent = data.fundamentals.sector || '--';
     }
   }
 
